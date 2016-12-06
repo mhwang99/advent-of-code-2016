@@ -1,11 +1,11 @@
 (defn getmap
-  [m e]
-  (loop [i 0 e e m m]
-    (if (empty? e) m
-      (let [f (first e)]
-        (if (get-in m [i f])
-          (recur (inc i) (rest e) (update-in m [i f] inc))
-          (recur (inc i) (rest e) (assoc-in m [i f] 1)))))))
+  [m s]
+  (loop [i 0 s s m m]
+    (if (empty? s) m
+      (let [c (first s)]
+        (if (get-in m [i c])
+          (recur (inc i) (rest s) (update-in m [i c] inc))
+          (recur (inc i) (rest s) (assoc-in m [i c] 1)))))))
 
 (defn getone
   [f m]
