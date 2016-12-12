@@ -9,11 +9,6 @@
                 (conj cmds [(keyword cmd) (v a) (v b)])))
             [] l)))
 
-(defn getv
-  [rg a]
-  (if (keyword? a) (a rg) a))
-
-
 (defn proc
   [cmds rg]
   (let [cnt (count cmds)
