@@ -7,6 +7,7 @@
                 b (Integer/toBinaryString i)
                 c (count (re-seq #"1" b))]
             (odd? c))))
+
 (defn find-min
   [g p d mn]
   (loop [s #{} l [p] n 0]
