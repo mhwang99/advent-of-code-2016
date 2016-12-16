@@ -2,8 +2,7 @@
   [has start]
   (loop [n 1]
     (let [p (->> start
-                (map + (range))
-                (map (partial + n))
+                (map + (range n (+ n 999999)))
                 (map #(mod %2 %1) has))]
       (if (apply = 0 p) (dec n)
         (recur (inc n))))))
