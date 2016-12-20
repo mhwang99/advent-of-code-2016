@@ -11,16 +11,8 @@ NODATA_T* create_nodata (int n) {
   NODATA_T* pdata = (NODATA_T*)malloc(sizeof(NODATA_T) * n);
   for (int i = 0; i < n; i++) {
     pdata[i].idx = i + 1;
-    if (i == (n - 1)) {
-      pdata[i].next = pdata;
-    } else {
-      pdata[i].next = pdata + (i + 1);
-    }
-    if (i == 0) {
-      pdata[i].prev = pdata + (n - 1);
-    } else {
-      pdata[i].prev = pdata + (i - 1);
-    }
+    pdata[i].next = pdata + (i + 1 == n ? 0 : (i + 1));
+    pdata[i].prev = pdata + (i == 0 ? (n - 1) : (i - 1));
   }
   return pdata;
 }
