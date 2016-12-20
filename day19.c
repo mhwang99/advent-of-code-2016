@@ -7,7 +7,7 @@ typedef struct _NODATA_T {
   void* next;
 } NODATA_T;
 
-NODATA_T* create_t (int n) {
+NODATA_T* create_nodata (int n) {
   NODATA_T* pdata = (NODATA_T*)malloc(sizeof(NODATA_T) * n);
   for (int i = 0; i < n; i++) {
     pdata[i].idx = i + 1;
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
   if(argc > 1) {
     tot = atoi(argv[1]);
   }
-  NODATA_T* pdata = create_t(tot);
+  NODATA_T* pdata = create_nodata(tot);
   NODATA_T* pfirst = pdata;
   for (;tot > 1; tot--) {
     NODATA_T* tg = find_target(pdata, tot);
