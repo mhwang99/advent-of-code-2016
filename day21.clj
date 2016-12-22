@@ -10,15 +10,14 @@
 
 (defn swp-chr
   [s a b]
-  (let [s (apply str s)
-        a (.indexOf s a)
-        b (.indexOf s b)]
+  (let [a (.indexOf s (first a))
+        b (.indexOf s (first b))]
     (swp-pos s a b)))
 
 (defn rot-r
   [s a]
   (let [a (mod a (count s))]
-    (concat (reverse (take a (reverse s)))
+    (concat (take-last a s)
             (drop-last a s))))
 
 (defn rot-l
@@ -29,19 +28,17 @@
 
 (defn rot-b
   [s a]
-  (let [s (apply str s)
-        a (.indexOf s a)
+  (let [a (.indexOf s (first a))
         a (+ a 1 (if (> a 3) 1 0))]
     (rot-r s a)))
 
 (defn rot-rb
   [s a]
-  (let [s (apply str s)
-        a (.indexOf s a)
-        a (case
-            (odd? a) (/ (inc a) 2)
-            (= 0 a) 9
-            :else (+ (/ a 2) 5))]
+  (let [a (.indexOf s (first a))
+        a ({0 9, 1 1,
+            2 6, 3 2,
+            4 7, 5 3,
+            6 8, 7 4} a)]
     (rot-l s a)))
 
 (defn rev-pos
@@ -59,29 +56,30 @@
             [c]
             (drop b s))))
 
-
 (defn nthi
   [l i]
   (Integer. (nth l i)))
 
 (defn proc
   [l s]
-  (apply str
-         (reduce (fn [s cmd]
-                   (case [(first cmd) (second cmd)]
-                     ["swap" "position"] (swp-pos s (nthi cmd 2) (nthi cmd 5))
-                     ["swap" "letter"] (swp-chr s (nth cmd 2) (nth cmd 5))
-                     ["rotate" "left"] (rot-l s (nthi cmd 2))
-                     ["rotate" "right"] (rot-r s (nthi cmd 2))
-                     ["rotate" "based"] (rot-b s (nth cmd 6))
-                     ["reverse" "positions"] (rev-pos s (nthi cmd 2) (nthi cmd 4))
-                     ["move" "position"] (mov-pos s (nthi cmd 2) (nthi cmd 5))
-                     s))
-                 s l)))
+  (let [s (seq s)]
+    (apply str
+           (reduce (fn [s cmd]
+                     (case [(first cmd) (second cmd)]
+                       ["swap" "position"] (swp-pos s (nthi cmd 2) (nthi cmd 5))
+                       ["swap" "letter"] (swp-chr s (nth cmd 2) (nth cmd 5))
+                       ["rotate" "left"] (rot-l s (nthi cmd 2))
+                       ["rotate" "right"] (rot-r s (nthi cmd 2))
+                       ["rotate" "based"] (rot-b s (nth cmd 6))
+                       ["reverse" "positions"] (rev-pos s (nthi cmd 2) (nthi cmd 4))
+                       ["move" "position"] (mov-pos s (nthi cmd 2) (nthi cmd 5))
+                       s))
+                   s l))))
 
 (defn rev-proc
   [l s]
-  (let [l (reverse l)]
+  (let [s (seq s)
+        l (reverse l)]
     (apply str
            (reduce (fn [s cmd]
                      (case [(first cmd) (second cmd)]
