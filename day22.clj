@@ -12,14 +12,6 @@
             (> (nth a 0) (nth b 1))) false
       true)))
 
-;part1
-(->> (for [a (range 875)
-           b (range 875)
-           :when (not= a b)]
-       [a b])
-     (filter #(viable src %))
-     count)
-
 (defn redraw
   [l ylen mx]
   (let [[a b] (get l (- mx ylen))
@@ -32,61 +24,81 @@
         (assoc (- mx ylen) \g)
         )))
 
-(defn printl
-  [l ylen]
-  (let [sl (mapv #(apply str %) (partition ylen l))]
-    (println (count sl))
-    (doseq [s sl]
-      (println s))))
+(def re-src (redraw src 25 (count src)))
 
-;part2 - way1 : print and count by finger : really fast
-(printl (redraw src 25 (* 35 25)) 25)
-
-(defn summary [l]
-  [(.indexOf l \z) (.indexOf l \g)])
-
-(defn mov
-  [l a b his]
-  (let [bb (get l b)]
-    (if (= bb \#) nil
-      (let [l (-> l
-                  (assoc b \z)
-                  (assoc a bb))]
-        (if (some #{(summary l)} his) nil
-          l)))))
-
-(defn getnxt
-  [l ylen mx his]
-  (let [a (.indexOf l \z)
-        g (.indexOf l \g)
-        bs (cond-> []
-             (>= (- a ylen) 0) (conj (- a ylen))
-             (< (+ a ylen) mx) (conj (+ a ylen))
-             (> (mod a ylen) 0) (conj (dec a))
-             (> (mod (inc a) ylen) 0) (conj (inc a)))]
+(defn get-nxtpath
+  [p l ylen mx his]
+  (let [bs (cond-> []
+             (>= (- p ylen) 0) (conj (- p ylen))
+             (< (+ p ylen) mx) (conj (+ p ylen))
+             (> (mod p ylen) 0) (conj (dec p))
+             (> (mod (inc p) ylen) 0) (conj (inc p)))]
     (->> bs
-         (mapv #(mov l a % his))
-         (filterv identity))))
+        (filter (complement his))
+        (filter #(not (#{\g \#} (get l %)))))))
 
-(defn goal?
-  [ll]
-  (reduce #(if (= \g (get %2 0))
-             (reduced true)
-             %1) false ll))
-
-(defn proc
+(defn get-path
   [l ylen]
   (let [mx (count l)
-        l (redraw l ylen mx)]
-    (loop [his [] ll [l] n 0]
-      (println "---" n "(" (count his)")")
-      (let [his (into his (mapv summary ll))
-            ll (reduce #(into %1 (getnxt %2 ylen mx his)) #{} ll)]
-        (cond
-          (empty? ll) -1
-          (goal? ll) (inc n)
-          :else (recur his ll (inc n)))))))
+        p (.indexOf l \g)]
+    (loop [his #{p} paths [[p]]]
+      (let [[his paths] (reduce (fn [[his paths] path]
+                                  (let [ps (get-nxtpath (last path) l ylen mx his)
+                                        his (into his ps)]
+                                    [his (into paths (mapv (partial conj path) ps))]))
+                                [his []] paths)
+            goals (reduce #(case (last %2) 0 (conj %1 %2) %1) [] paths)]
+        (if (empty? goals) (recur his paths)
+          goals)))))
 
-;part2 - way2 : using logic, it take long long time
-(proc src 25)
+(defn get-minmove
+  [l ylen mx init target]
+  (loop [his #{init} ps [init] n 0]
+    (let [[his ps] (reduce (fn [[his ps] p]
+                             (let [cps (get-nxtpath p l ylen mx his)
+                                   ps (into ps cps)
+                                   his (into his ps)]
+                               [his ps]))
+                           [his []] ps)]
+      (cond
+        (empty? ps) -1
+        (some #{target} ps) (inc n)
+        :else (recur his ps (inc n))))))
+
+(defn proc-path
+  [l ylen mx path]
+  (loop [l l path path cnt 0]
+    (if (empty? path) cnt
+      (let [g (.indexOf l \g)
+            init (.indexOf l \z)
+            target (first path)
+            n (get-minmove l ylen mx init target)]
+        (recur (-> l
+                   (assoc init \.)
+                   (assoc target \g)
+                   (assoc g \z))
+               (rest path)
+               (+ cnt n 1))))))
+
+(defn proc-p1
+  [l]
+  (->> (for [a (range (count l))
+             b (range (count l))
+             :when (not= a b)]
+         [a b])
+       (filter #(viable l %))
+       count))
+
+(defn proc-p2
+  [l ylen]
+  (let [mx (count l)
+        paths (get-path l ylen)]
+    (apply min (mapv #(proc-path l ylen mx (rest %)) paths))))
+
+
+;part1
+(proc-p1 src)
+
+;part2
+(proc-p2 re-src 25)
 
