@@ -61,9 +61,9 @@
   (let [r6 (part1 src 6) ;; x + a = r6
         r7 (part1 src 7) ;; 7x + a = r7
         x (/ (- r7 r6) 6) ;; 6x = r7 - r6 , x = (r7 - r6) / 6
-        conv (- r6 x)
+        a (- r6 x)
         ]
-    (+ conv (apply * x (range 7 (inc n)))))) ; x * 7 * 8 * ... n + a
+    (+ a (apply * x (range 7 (inc n)))))) ; x * 7 * 8 * ... n + a
 
 ;; part1
 (part1 (slurp "day23.txt") 7)
