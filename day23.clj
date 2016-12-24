@@ -36,29 +36,37 @@
   [cmds rg]
   (let [cnt (count cmds)
         getv (fn [rg a] (if (keyword? a) (a rg) a))]
-    (loop [cmds cmds rg rg n 0 bv (:b rg)]
-      (let [n (if (< n 0) 0 n)
-            bv (cond
-                 (not= (:b rg) bv) (do (println "========" rg) (:b rg))
-                 :else bv)]
+    (loop [cmds cmds rg rg n 0]
+      (let [n (if (< n 0) 0 n)]
         (if (> n (dec cnt)) rg
           (let [[cmd a b] (nth cmds n)]
             (case cmd
-              :inc (recur cmds (updatev rg a inc) (inc n) bv)
-              :dec (recur cmds (updatev rg a dec) (inc n) bv)
-              :cpy (recur cmds (assocv rg b (getv rg a)) (inc n) bv)
+              :inc (recur cmds (updatev rg a inc) (inc n))
+              :dec (recur cmds (updatev rg a dec) (inc n))
+              :cpy (recur cmds (assocv rg b (getv rg a)) (inc n))
               :jnz (if (not= 0 (getv rg a))
-                     (recur cmds rg (+ n (getv rg b)) bv)
-                     (recur cmds rg (inc n) bv))
-              :tgl (recur (tglcmd cmds (+ (getv rg a) n)) rg (inc n) bv)
+                     (recur cmds rg (+ n (getv rg b)))
+                     (recur cmds rg (inc n)))
+              :tgl (recur (tglcmd cmds (+ (getv rg a) n)) rg (inc n))
               )))))))
 
+(defn part1
+  [src n]
+  (let [cmds (parse (clojure.string/split src #"\n"))
+        rg {:a n :b 0 :c 0 :d 0}]
+    (:a (proc cmds rg))))
+
+(defn part2
+  [src n]
+  (let [r6 (part1 src 6) ;; x + a = r6
+        r7 (part1 src 7) ;; 7x + a = r7
+        x (/ (- r7 r6) 6) ;; 6x = r7 - r6 , x = (r7 - r6) / 6
+        conv (- r6 x)
+        ]
+    (+ conv (apply * x (range 7 (inc n)))))) ; x * 7 * 8 * ... n + a
+
 ;; part1
-(proc (parse (clojure.string/split (slurp "day23.txt") #"\n")) {:a 7 :b 0 :c 0 :d 0})
+(part1 (slurp "day23.txt") 7)
 
 ;; part2
-;; (proc (parse (clojure.string/split (slurp "day23.txt") #"\n")) {:a 6 :b 0 :c 0 :d 0})
-;; (proc (parse (clojure.string/split (slurp "day23.txt") #"\n")) {:a 7 :b 0 :c 0 :d 0})
-;; (proc (parse (clojure.string/split (slurp "day23.txt") #"\n")) {:a 8 :b 0 :c 0 :d 0})
-;; ==> 7440 + 12 * 11 * 10 * 9 * 8 * 7 * 6 * 5 * 4 * 3 * 2
-(+ 7440 (apply * (range 1 13)))
+(part2 (slurp "day23.txt") 12)
